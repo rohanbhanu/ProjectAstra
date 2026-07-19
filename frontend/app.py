@@ -1,6 +1,6 @@
 import streamlit as st
 import requests as req
-
+from config import BACKEND_URL
 st.title("Project Astra")
 
 user_msg = st.text_input("Chat", placeholder="Let's chat")
@@ -12,7 +12,7 @@ if st.button("Send"):
 
 
     resp = req.post(
-        "http://127.0.0.1:8000/chat",
+        f"{BACKEND_URL}/chat",
         json={
             "message": user_msg
         }
