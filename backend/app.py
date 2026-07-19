@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from backend import chatbot
 
 class ChatRequest(BaseModel):
     message: str
@@ -18,6 +19,8 @@ def home():
 
 @app.post("/chat")
 def chat(request: ChatRequest):
+    msg = request.message.lower()
+
     return {
-        "reply": f"Welcome {request.message}"
+        "reply": chatbot.generateResponse(msg)
     }
