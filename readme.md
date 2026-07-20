@@ -11,8 +11,6 @@ Project Astra is my personal journey to becoming an Enterprise AI Engineer.
 - Python
 - FastAPI
 - Streamlit
-- Azure (coming soon)
-- Databricks (coming soon)
 
 ## Current Progress
 
@@ -20,9 +18,17 @@ Project Astra is my personal journey to becoming an Enterprise AI Engineer.
 ✅ POST APIs
 ✅ Swagger
 
+## Frontend
+To run the frontend (in StreamLit) just execute: start cmd /k "py -m streamlit run frontend/app.py"
+
+## Backend
+To run backend (in FastAPI) just execute: start cmd /k "py -m uvicorn backend.app:app --reload"
+
+## Full application execution:
+To run end to end application execute run.bat
+
 ## Upcoming
 
-- Frontend
 - LLM Integration
 - Memory
 - RAG
