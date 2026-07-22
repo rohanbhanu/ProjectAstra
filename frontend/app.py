@@ -66,7 +66,11 @@ st.caption("Your Personal AI Assistant")
 # ----------------------------------------------------
 if "ReqResJSON" not in st.session_state:
     st.session_state["ReqResJSON"] = []
+if "waiting_for_reply" not in st.session_state:
+    st.session_state["waiting_for_reply"] = False
 
+if "pending_message" not in st.session_state:
+    st.session_state["pending_message"] = ""
 # ----------------------------------------------------
 # Sidebar
 # ----------------------------------------------------
@@ -119,6 +123,7 @@ user_msg = st.chat_input("Ask me anything...")
 # ----------------------------------------------------
 # Process New Message
 # ----------------------------------------------------
+
 if user_msg:
 
     # Save user message
@@ -127,48 +132,45 @@ if user_msg:
             "role": "user",
             "content": user_msg
         }
-    )
+        )
+    st.session_state["pending_message"] = user_msg
+    st.session_state["waiting_for_reply"] = True
+    st.rerun()
 
+
+if st.session_state["waiting_for_reply"] == True:
     try:
-
         with st.spinner("🤖 Astra is thinking..."):
-
             resp = req.post(
                 f"{BACKEND_URL}/chat",
                 json={
-                    "message": user_msg
+                    "message": st.session_state["pending_message"]
                 },
                 timeout=120
             )
-
         if resp.status_code == 200:
-
             data = resp.json()
-
             st.session_state["ReqResJSON"].append(
                 {
                     "role": "assistant",
                     "content": data["reply"]
                 }
             )
-
         else:
-
             st.session_state["ReqResJSON"].append(
                 {
                     "role": "assistant",
                     "content": "⚠️ Backend request failed."
                 }
             )
-
     except Exception as e:
-
         st.session_state["ReqResJSON"].append(
             {
                 "role": "assistant",
                 "content": f"⚠️ Error: {str(e)}"
             }
         )
-
     # Refresh page to show updated history
+    st.session_state["waiting_for_reply"] = False
+    st.session_state["pending_message"] = ""
     st.rerun()
