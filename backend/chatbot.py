@@ -1,8 +1,8 @@
 import requests
-
+from backend.config import *
 from backend.prompts import build_prompt
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
+
 
 
 def generateResponse(user_input):
@@ -10,13 +10,13 @@ def generateResponse(user_input):
     prompt = build_prompt(user_input)
 
     payload = {
-        "model": "tinyllama",
+        "model": MODEL_NAME,
         "prompt": prompt,
         "stream": False,
         "options": {
-            "temperature": 0.2,
-            "top_p": 0.9,
-            "num_predict": 500,
+            "temperature": TEMPERATURE,
+            "top_p": TOP_P,
+            "num_predict": NUM_PREDICT,
             "stop": [
                 "User:",
                 "Assistant:",
@@ -29,11 +29,18 @@ def generateResponse(user_input):
     response = requests.post(
         OLLAMA_URL,
         json=payload,
-        timeout=120
+        timeout=REQUEST_TIMEOUT
     )
 
     response.raise_for_status()
-
     data = response.json()
+    reply = data["response"]
+    prompt_tokens = data.get("prompt_eval_count", 0)
+    completion_tokens = data.get("eval_count", 0)
 
-    return data["response"].strip()
+
+    return {
+    "reply": reply,
+    "prompt_tokens": prompt_tokens,
+    "completion_tokens": completion_tokens
+    }

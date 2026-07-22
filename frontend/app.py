@@ -140,7 +140,7 @@ if user_msg:
 
 if st.session_state["waiting_for_reply"] == True:
     try:
-        with st.spinner("🤖 Astra is thinking..."):
+        with st.spinner("🤖 Astra is typing..."):
             resp = req.post(
                 f"{BACKEND_URL}/chat",
                 json={
@@ -156,11 +156,19 @@ if st.session_state["waiting_for_reply"] == True:
                     "content": data["reply"]
                 }
             )
+        if resp.status_code == 400:
+                    data = resp.json()
+                    st.session_state["ReqResJSON"].append(
+                        {
+                            "role": "assistant",
+                            "content": "⚠️ Invalid Request"
+                        }
+                    )    
         else:
             st.session_state["ReqResJSON"].append(
                 {
                     "role": "assistant",
-                    "content": "⚠️ Backend request failed."
+                    "content": "⚠️ Unable to connect to AI model. Please try again later."
                 }
             )
     except Exception as e:
