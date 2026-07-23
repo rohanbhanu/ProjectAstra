@@ -138,7 +138,7 @@ if user_msg:
     st.rerun()
 
 
-if st.session_state["waiting_for_reply"] == True:
+if st.session_state["waiting_for_reply"]:
     try:
         with st.spinner("🤖 Astra is typing..."):
             resp = req.post(
@@ -147,7 +147,7 @@ if st.session_state["waiting_for_reply"] == True:
                     "message": st.session_state["pending_message"]
                 },
                 timeout=120
-            )
+            )    
         if resp.status_code == 200:
             data = resp.json()
             st.session_state["ReqResJSON"].append(
@@ -156,19 +156,26 @@ if st.session_state["waiting_for_reply"] == True:
                     "content": data["reply"]
                 }
             )
-        if resp.status_code == 400:
-                    data = resp.json()
+        elif resp.status_code == 400:
                     st.session_state["ReqResJSON"].append(
                         {
                             "role": "assistant",
                             "content": "⚠️ Invalid Request"
                         }
                     )    
+        elif resp.status_code == 401:
+                            st.session_state["ReqResJSON"].append(
+                                {
+                                    "role": "assistant",
+                                    "content": "⚠️ Authentication failed."
+                                }
+                            )    
+                
         else:
             st.session_state["ReqResJSON"].append(
                 {
                     "role": "assistant",
-                    "content": "⚠️ Unable to connect to AI model. Please try again later."
+                    "content": f"⚠️ Server returned HTTP {resp.status_code}"
                 }
             )
     except Exception as e:

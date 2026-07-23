@@ -28,3 +28,12 @@ LOG_LEVEL = "INFO"
 
 PAGE_TITLE = "Project Astra"
 PAGE_ICON = "🤖"
+
+
+STOP_WORDS =[
+    "User:",
+    "Assistant:",
+    "Human:",
+    "Project Astra:"]
+
+
