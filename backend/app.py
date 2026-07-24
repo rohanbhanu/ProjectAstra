@@ -28,21 +28,22 @@ def home():
 
 @app.post("/chat")
 def chat(request: ChatRequest):
+    logger = logging.getLogger(__name__)
 
     start_time = datetime.now()
 
     msg = request.message.lower()
 
-    logging.info(f"User: {msg}")
+    logger.info(f"User: {msg}")
 
     reply = chatbot.generateResponse(msg)
-    logging.info(f"Prompt Tokens      : {reply['prompt_tokens']}")
-    logging.info(f"Completion Tokens  : {reply['completion_tokens']}")
+    logger.info(f"Prompt Tokens      : {reply['prompt_tokens']}")
+    logger.info(f"Completion Tokens  : {reply['completion_tokens']}")
     
     latency = (datetime.now() - start_time).total_seconds()
 
-    logging.info(f"Latency: {latency:.2f} sec")
-    logging.info("Status: Success")
+    logger.info(f"Latency: {latency:.2f} sec")
+    logger.info("Status: Success")
 
     return {
         "reply": reply['reply']
