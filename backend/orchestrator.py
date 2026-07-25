@@ -5,7 +5,7 @@ from backend.memory import Memory
 from backend.prompts import build_prompt
 from backend import llm
 from backend.tools import calculator
-
+from backend import llm_service
 logger = logging.getLogger(__name__)
 
 
@@ -38,10 +38,11 @@ def process(user_input: str) -> dict:
             ↓
         Response
     """
+    logger.info("User query received.")
 
     pipeline_start = datetime.now()
 
-    logger.info("User query received.")
+    
 
     # ---------------------------------------
     # Intent Detection
@@ -88,31 +89,10 @@ def process(user_input: str) -> dict:
     else:
 
         logger.info("Routing request to Language Model.")
-
-        prompt_start = datetime.now()
-
-        # Tomorrow this will become:
-        # prompt = build_prompt(user_input, conversation_history)
-
-        prompt = build_prompt(user_input,conversation_history)
-
-        prompt_time = (
-            datetime.now() - prompt_start
-        ).total_seconds()
-
-        logger.info("Prompt generated.")
-        logger.info(
-            f"Prompt generation completed in {prompt_time:.3f} sec"
+        response = llm_service.generate(
+        user_input,
+        conversation_history
         )
-
-        llm_start = datetime.now()
-
-        response = llm.generate_response(prompt)
-
-        llm_time = (
-            datetime.now() - llm_start
-        ).total_seconds()
-
         logger.info(
             f"LLM response received in {llm_time:.3f} sec"
         )
