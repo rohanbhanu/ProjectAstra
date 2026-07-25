@@ -93,9 +93,7 @@ def process(user_input: str) -> dict:
         user_input,
         conversation_history
         )
-        logger.info(
-            f"LLM response received in {llm_time:.3f} sec"
-        )
+        
 
     # ---------------------------------------
     # Save Conversation
