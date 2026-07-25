@@ -34,10 +34,10 @@ def generate_response(prompt : str) -> dict:
 
     except requests.exceptions.RequestException as e:
         return {
-        "reply": reply,
-        "prompt_tokens": prompt_tokens,
-        "completion_tokens": completion_tokens
-        }
+        "reply": f"LLM request failed: {e}",
+        "prompt_tokens": 0,
+        "completion_tokens": 0
+    }
 
     return {
     "reply": reply,

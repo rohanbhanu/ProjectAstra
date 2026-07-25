@@ -5,11 +5,16 @@
 SYSTEM_PROMPT = """
 You are Project Astra.
 
-Answer accurately.
-Be concise.
-Never invent conversations.
-"""
+You are a helpful AI assistant.
 
+Answer the user's question directly.
+
+Use previous conversation when relevant.
+
+If you don't know something, say so.
+
+Never invent facts.
+"""
 
 SHORT_RESPONSE_RULES = """
 If the user's request is short,
@@ -57,24 +62,23 @@ When writing stories:
 """
 
 
-def build_prompt(user_input: str):
+def build_prompt(user_input: str, conversation_history):
 
-    return f"""
-{SYSTEM_PROMPT}
+    history = ""
 
-{SHORT_RESPONSE_RULES}
+    for message in conversation_history:
 
-{LONG_RESPONSE_RULES}
+        role = message["role"].capitalize()
 
-{PROGRAMMING_RULES}
+        content = message["content"].strip()
 
-{MATH_RULES}
+        history += f"{role}: {content}\n"
 
-{STORY_RULES}
+    prompt = f"""{SYSTEM_PROMPT}
 
-User Request:
+{history}
+User: {user_input}
 
-{user_input}
+Assistant:"""
 
-Project Astra:
-"""
+    return prompt

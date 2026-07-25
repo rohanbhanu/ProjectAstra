@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 from enum import Enum
-
+from backend.memory import Memory
 from backend.prompts import build_prompt
 from backend import llm
 from backend.tools import calculator
@@ -24,13 +24,13 @@ def process(user_input: str) -> dict:
             ↓
         Intent Detection
             ↓
-        Memory (future)
+        Conversation Memory
             ↓
         RAG (future)
             ↓
         Tool Selection
             ↓
-        Prompt Builder (only for LLM)
+        Prompt Builder (LLM only)
             ↓
         LLM / Tool
             ↓
@@ -43,23 +43,31 @@ def process(user_input: str) -> dict:
 
     logger.info("User query received.")
 
-    # -------------------------------
+    # ---------------------------------------
     # Intent Detection
-    # -------------------------------
+    # ---------------------------------------
     intent = detect_intent(user_input)
 
-    # -------------------------------
+    # ---------------------------------------
+    # Conversation Memory
+    # ---------------------------------------
+    conversation_history = Memory.retrieve()
+    logger.info(str(conversation_history))
+
+    logger.info(
+        f"Retrieved {len(conversation_history)} conversation messages."
+    )
+
+    # ---------------------------------------
     # Future Modules
-    # -------------------------------
-    memory = retrieve_memory(user_input)
+    # ---------------------------------------
+    retrieve_rag(user_input)
 
-    rag_context = retrieve_rag(user_input)
+    choose_tool(intent)
 
-    tool = choose_tool(intent)
-
-    # -------------------------------
+    # ---------------------------------------
     # Calculator Route
-    # -------------------------------
+    # ---------------------------------------
     if intent == Intent.CALCULATOR:
 
         logger.info("Routing request to Calculator.")
@@ -70,41 +78,63 @@ def process(user_input: str) -> dict:
 
         calc_time = (datetime.now() - calc_start).total_seconds()
 
-        logger.info(f"Calculator completed in {calc_time:.3f} sec")
+        logger.info(
+            f"Calculator completed in {calc_time:.3f} sec"
+        )
 
-    # -------------------------------
+    # ---------------------------------------
     # LLM Route
-    # -------------------------------
+    # ---------------------------------------
     else:
 
         logger.info("Routing request to Language Model.")
 
         prompt_start = datetime.now()
 
-        prompt = build_prompt(user_input)
+        # Tomorrow this will become:
+        # prompt = build_prompt(user_input, conversation_history)
 
-        prompt_time = (datetime.now() - prompt_start).total_seconds()
+        prompt = build_prompt(user_input,conversation_history)
+
+        prompt_time = (
+            datetime.now() - prompt_start
+        ).total_seconds()
 
         logger.info("Prompt generated.")
-        logger.info(f"Prompt generation completed in {prompt_time:.3f} sec")
+        logger.info(
+            f"Prompt generation completed in {prompt_time:.3f} sec"
+        )
 
         llm_start = datetime.now()
 
         response = llm.generate_response(prompt)
 
-        llm_time = (datetime.now() - llm_start).total_seconds()
+        llm_time = (
+            datetime.now() - llm_start
+        ).total_seconds()
 
-        logger.info(f"LLM response received in {llm_time:.3f} sec")
+        logger.info(
+            f"LLM response received in {llm_time:.3f} sec"
+        )
 
-    # -------------------------------
-    # Future Memory Save
-    # -------------------------------
-    save_memory(user_input, response)
+    # ---------------------------------------
+    # Save Conversation
+    # ---------------------------------------
+    Memory.store(
+        user_input,
+        response["reply"]
+    )
 
-    pipeline_time = (datetime.now() - pipeline_start).total_seconds()
+    logger.info("Conversation saved to memory.")
+
+    pipeline_time = (
+        datetime.now() - pipeline_start
+    ).total_seconds()
 
     logger.info("Returning response")
-    logger.info(f"Pipeline completed in {pipeline_time:.3f} sec")
+    logger.info(
+        f"Pipeline completed in {pipeline_time:.3f} sec"
+    )
 
     return response
 
@@ -115,7 +145,13 @@ def detect_intent(user_input):
 
     req = str(user_input).lower()
 
-    CALCULATOR_KEYWORDS = {"+", "-", "*", "/", "calculate"}
+    CALCULATOR_KEYWORDS = {
+        "+",
+        "-",
+        "*",
+        "/",
+        "calculate"
+    }
 
     if any(word in req for word in CALCULATOR_KEYWORDS):
         intent = Intent.CALCULATOR
@@ -125,16 +161,11 @@ def detect_intent(user_input):
     return intent
 
 
-def retrieve_memory(user_input):
-
-    logger.info("Checking memory history completed")
-
-    return None
-
-
 def retrieve_rag(user_input):
 
-    logger.info("Retrieval-Augmented Generation check completed")
+    logger.info(
+        "Retrieval-Augmented Generation check completed"
+    )
 
     return None
 
@@ -142,12 +173,5 @@ def retrieve_rag(user_input):
 def choose_tool(intent):
 
     logger.info("Choosing tool completed")
-
-    return None
-
-
-def save_memory(user_input, response):
-
-    logger.info("Memory saved.")
 
     return None
