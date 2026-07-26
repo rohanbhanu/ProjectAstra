@@ -1,12 +1,11 @@
 from datetime import datetime
 import logging
+
 from backend.intent import Intent
 from backend.memory import Memory
 from backend import tool_manager
 
 logger = logging.getLogger(__name__)
-
-
 
 
 def process(user_input: str) -> dict:
@@ -52,22 +51,40 @@ def process(user_input: str) -> dict:
     )
 
     logger.info(
-        f"Retrieved {len(conversation_history)} conversation messages."
+        "Retrieved %d conversation messages.",
+        len(conversation_history)
     )
 
     # ---------------------------------------
-    # Future Modules
+    # Future RAG
     # ---------------------------------------
     retrieve_rag(user_input)
 
     # ---------------------------------------
     # Tool Selection
     # ---------------------------------------
-    response = tool_manager.execute(
-        intent,
-        user_input,
-        conversation_history
-    )
+    tool = tool_manager.get_tool(intent)
+
+
+    if tool is None:
+        raise ValueError(
+        f"No tool registered for {intent.name}")
+
+    logger.info(
+    "Routing request to %s",
+    tool.name())
+    if not tool.validate_input(
+    user_input,
+    conversation_history
+):
+        raise ValueError(
+        "Invalid tool input.")
+
+    response = tool.execute(
+    user_input,
+    conversation_history)
+
+
 
     # ---------------------------------------
     # Save Conversation
@@ -83,9 +100,9 @@ def process(user_input: str) -> dict:
         datetime.now() - pipeline_start
     ).total_seconds()
 
-    logger.info("Returning response")
     logger.info(
-        f"Pipeline completed in {pipeline_time:.3f} sec"
+        "Pipeline completed in %.3f sec",
+        pipeline_time
     )
 
     return response
@@ -108,7 +125,10 @@ def detect_intent(user_input):
     if any(word in req for word in CALCULATOR_KEYWORDS):
         intent = Intent.CALCULATOR
 
-    logger.info(f"Detected intent: {intent.name}")
+    logger.info(
+        "Detected intent: %s",
+        intent.name
+    )
 
     return intent
 
