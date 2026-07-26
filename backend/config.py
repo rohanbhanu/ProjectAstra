@@ -4,7 +4,13 @@
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
-MODEL_NAME = "tinyllama"
+AVAILABLE_MODELS = {
+    "fast": "tinyllama",
+    "smart": "gemma3:1b"
+}
+
+MODEL_NAME = AVAILABLE_MODELS["fast"]
+
 
 TEMPERATURE = 0.2
 TOP_P = 0.9
