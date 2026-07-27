@@ -122,8 +122,20 @@ def detect_intent(user_input):
         "calculate"
     }
 
+    SEARCH_KEYWORDS = {
+        "search",
+        "latest",
+        "today",
+        "current",
+        "news",
+        "weather"
+    }
+
     if any(word in req for word in CALCULATOR_KEYWORDS):
         intent = Intent.CALCULATOR
+
+    elif any(word in req for word in SEARCH_KEYWORDS):
+        intent = Intent.SEARCH
 
     logger.info(
         "Detected intent: %s",
