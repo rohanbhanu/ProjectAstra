@@ -85,7 +85,10 @@ with st.sidebar:
 # ----------------------------------------------------
 # Display Chat History
 # ----------------------------------------------------
+
 for msg in st.session_state["ReqResJSON"]:
+
+    content = html.escape(str(msg["content"]))
 
     if msg["role"] == "user":
 
@@ -93,7 +96,7 @@ for msg in st.session_state["ReqResJSON"]:
             f"""
             <div class="user-row">
                 <div class="user-bubble">
-                    {msg["content"]}
+                    {content}
                 </div>
                 <div class="avatar">👤</div>
             </div>
@@ -108,7 +111,7 @@ for msg in st.session_state["ReqResJSON"]:
             <div class="assistant-row">
                 <div class="avatar">🤖</div>
                 <div class="assistant-bubble">
-                    {msg["content"]}
+                    {content}
                 </div>
             </div>
             """,
