@@ -1,7 +1,7 @@
 from backend.tool_interface import Tool
 from backend.services import search
-
-
+from backend.services import query_rewriter
+import logging
 class SearchTool(Tool):
 
     def name(self):
@@ -18,25 +18,15 @@ class SearchTool(Tool):
         return isinstance(user_input, str)
 
 
-    def execute(
-        self,
-        user_input,
-        conversation_history=None
-    ):
+    def execute(self, user_input, conversation_history=None):
 
-        results = search.search(user_input)
+        rewritten_query = query_rewriter.rewrite(user_input)
+        logging.info("User Query:" + user_input)
+        logging.info("Rewritten query:" + rewritten_query)
 
-        formatted_results = ""
-
-        for result in results:
-            formatted_results += (
-                f"Title: {result['title']}\n"
-                f"URL: {result['url']}\n"
-                f"Snippet: {result['snippet']}\n\n"
-            )
+        results = search.search(rewritten_query)
 
         return {
-            "reply": formatted_results,
-            "prompt_tokens": 0,
-            "completion_tokens": 0
-        }
+        "search_results": results,
+        "rewritten_query": rewritten_query
+    }

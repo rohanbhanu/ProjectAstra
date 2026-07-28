@@ -1,7 +1,7 @@
 import streamlit as st
 import requests as req
 from config import BACKEND_URL
-
+import html
 # ----------------------------------------------------
 # Page Configuration
 # ----------------------------------------------------
@@ -36,6 +36,8 @@ st.markdown("""
     border-radius:18px;
     max-width:70%;
     font-size:16px;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .assistant-bubble{
@@ -45,8 +47,9 @@ st.markdown("""
     border-radius:18px;
     max-width:70%;
     font-size:16px;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
-
 .avatar{
     font-size:28px;
     margin:0 10px;

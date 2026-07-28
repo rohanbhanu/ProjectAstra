@@ -4,15 +4,18 @@ from backend import chatbot
 import logging
 from datetime import datetime
 
-starttime=datetime.now()
+starttime = datetime.now()
+
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
 )
+
 
 class ChatRequest(BaseModel):
     message: str
+
 
 app = FastAPI(
     title="Project Astra API",
@@ -20,31 +23,46 @@ app = FastAPI(
     version="1.0.0"
 )
 
+
 @app.get("/")
 def home():
     return {
         "message": "Welcome to Project Astra!"
     }
 
+
 @app.post("/chat")
 def chat(request: ChatRequest):
+
     logger = logging.getLogger(__name__)
 
     start_time = datetime.now()
 
     msg = request.message.lower()
 
-    logger.info(f"User: {msg}")
+    logger.info("User: %s", msg)
 
-    reply = chatbot.generateResponse(msg)
-    logger.info(f"Prompt Tokens      : {reply['prompt_tokens']}")
-    logger.info(f"Completion Tokens  : {reply['completion_tokens']}")
-    
-    latency = (datetime.now() - start_time).total_seconds()
+    response = chatbot.generateResponse(msg)
 
-    logger.info(f"Latency: {latency:.2f} sec")
+    logger.info(
+        "Prompt Tokens      : %s",
+        response.get("prompt_tokens", 0)
+    )
+
+    logger.info(
+        "Completion Tokens  : %s",
+        response.get("completion_tokens", 0)
+    )
+
+    latency = (
+        datetime.now() - start_time
+    ).total_seconds()
+
+    logger.info(
+        "Latency: %.2f sec",
+        latency
+    )
+
     logger.info("Status: Success")
 
-    return {
-        "reply": reply['reply']
-    }
+    return response

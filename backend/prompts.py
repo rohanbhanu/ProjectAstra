@@ -93,3 +93,32 @@ User: {user_input}
 Assistant:"""
 
     return prompt
+
+
+
+def build_search_prompt(
+    user_query,
+    formatted_results,
+    conversation_history
+):
+
+    prompt = f"""
+You are Project Astra.
+
+Answer ONLY using the search results below.
+
+If the answer cannot be found,
+say you don't know.
+
+Search Results:
+
+{formatted_results}
+
+Question:
+
+{user_query}
+
+Answer:
+"""
+
+    return prompt

@@ -9,7 +9,7 @@ AVAILABLE_MODELS = {
     "smart": "gemma3:1b"
 }
 
-MODEL_NAME = AVAILABLE_MODELS["fast"]
+MODEL_NAME = AVAILABLE_MODELS["smart"]
 
 
 TEMPERATURE = 0.2
