@@ -11,6 +11,7 @@ def format_search_results(results):
             f"{index}.\n"
             f"Title: {item['title']}\n"
             f"URL: {item['url']}\n"
+            f"Score: {item.get('score',0)}\n"
             f"Snippet: {item['snippet']}\n\n"
         )
 

@@ -125,7 +125,7 @@ def process(user_input: str) -> dict:
 
 
             formatted_results = format_search_results(
-                evaluated_results
+                ranked_results
             )
 
 
