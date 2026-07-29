@@ -16,9 +16,28 @@ def search(query: str, max_results: int = 5):
     logger.info("Original Query : %s", query)
     logger.info("Search Query   : %s", clean_query)
 
-    with DDGS() as ddgs:
+    try:
 
-        search_results = ddgs.text(
-            clean_query,
-            max_results=max_results
-        )
+        with DDGS() as ddgs:
+
+            search_results = ddgs.text(
+                clean_query,
+                max_results=max_results
+            )
+
+            for item in search_results:
+
+                logger.info(item)
+
+                results.append(
+                    {
+                        "title": item.get("title", ""),
+                        "url": item.get("href", ""),
+                        "snippet": item.get("body", "")
+                    }
+                )
+
+    except Exception:
+        logger.exception("Web search failed.")
+
+    return results

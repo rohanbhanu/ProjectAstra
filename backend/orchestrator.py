@@ -9,6 +9,7 @@ from backend import prompts
 from backend import llm
 from backend.formatters.search_formatter import format_search_results
 from backend.ranking import rank_results
+from backend.confidence import calculate_search_confidence
 
 logger = logging.getLogger(__name__)
 
@@ -19,12 +20,10 @@ def process(user_input: str) -> dict:
 
     pipeline_start = datetime.now()
 
-
     # ---------------------------------------
     # Intent Detection
     # ---------------------------------------
     intent = detect_intent(user_input)
-
 
     # ---------------------------------------
     # Conversation Memory
@@ -36,12 +35,10 @@ def process(user_input: str) -> dict:
         len(conversation_history)
     )
 
-
     # ---------------------------------------
     # RAG Placeholder
     # ---------------------------------------
     rag_context = retrieve_rag(user_input)
-
 
     # ---------------------------------------
     # Tool Selection
@@ -53,12 +50,10 @@ def process(user_input: str) -> dict:
             f"No tool registered for {intent.name}"
         )
 
-
     logger.info(
         "Routing request to %s",
         tool.name()
     )
-
 
     if not tool.validate_input(
         user_input,
@@ -68,7 +63,6 @@ def process(user_input: str) -> dict:
             "Invalid tool input."
         )
 
-
     # ---------------------------------------
     # Execute Tool
     # ---------------------------------------
@@ -77,75 +71,87 @@ def process(user_input: str) -> dict:
         conversation_history
     )
 
-
     logger.debug(
         "Raw Tool Response: %s",
         tool_response
     )
 
-
     # ---------------------------------------
     # SEARCH PIPELINE
-    #
-    # Search Result
-    #       ↓
-    # Evaluator
-    #       ↓
-    # Formatter
-    #       ↓
-    # Prompt Builder
-    #       ↓
-    # LLM
-    #
     # ---------------------------------------
-
     if intent == Intent.SEARCH:
-
 
         search_results = tool_response.get(
             "search_results",
             []
         )
 
-
         if search_results:
 
-
+            # ------------------------------
+            # Evaluate Results
+            # ------------------------------
             evaluated_results = evaluate_search_results(
-            tool_response["search_results"],
-            user_input
+                search_results,
+                user_input
             )
 
-
+            # ------------------------------
+            # Rank Results
+            # ------------------------------
             ranked_results = rank_results(
-            evaluated_results,
-            top_k=3)
+                evaluated_results,
+                top_k=3
+            )
+
             tool_response["search_results"] = ranked_results
-            logger.info("Evaluated Search Results: %s",evaluated_results)
 
-
-            formatted_results = format_search_results(
+            logger.info(
+                "Ranked Search Results: %s",
                 ranked_results
             )
 
+            # ------------------------------
+            # Confidence
+            # ------------------------------
+            confidence = calculate_search_confidence(
+                ranked_results
+            )
+
+            tool_response["confidence"] = confidence
+
+            logger.info(
+                "Search Confidence: %s",
+                confidence
+            )
+
+            # ------------------------------
+            # Formatter
+            # ------------------------------
+            formatted_results = format_search_results(
+                ranked_results
+            )
 
             logger.debug(
                 "Formatted Search Results:\n%s",
                 formatted_results
             )
 
-
+            # ------------------------------
+            # Prompt
+            # ------------------------------
             prompt = prompts.build_search_prompt(
                 user_input,
                 formatted_results,
                 conversation_history
             )
 
-
+            # ------------------------------
+            # LLM
+            # ------------------------------
             response = llm.generate_response(
                 prompt
             )
-
 
         else:
 
@@ -158,17 +164,13 @@ def process(user_input: str) -> dict:
                 "completion_tokens": 0
             }
 
-
     else:
 
         response = tool_response
 
-
-
     # ---------------------------------------
     # Save Memory
     # ---------------------------------------
-
     if "reply" in response:
 
         Memory.store(
@@ -180,26 +182,18 @@ def process(user_input: str) -> dict:
             "Conversation saved to memory."
         )
 
-
-    logger.info(
-        response
-    )
-
+    logger.info(response)
 
     pipeline_time = (
         datetime.now() - pipeline_start
     ).total_seconds()
-
 
     logger.info(
         "Pipeline completed in %.3f sec",
         pipeline_time
     )
 
-
     return response
-
-
 
 
 def detect_intent(user_input):
@@ -208,7 +202,6 @@ def detect_intent(user_input):
 
     req = str(user_input).lower()
 
-
     CALCULATOR_KEYWORDS = {
         "+",
         "-",
@@ -216,7 +209,6 @@ def detect_intent(user_input):
         "/",
         "calculate"
     }
-
 
     SEARCH_KEYWORDS = {
         "search",
@@ -227,14 +219,12 @@ def detect_intent(user_input):
         "weather"
     }
 
-
     if any(
         word in req
         for word in CALCULATOR_KEYWORDS
     ):
 
         intent = Intent.CALCULATOR
-
 
     elif any(
         word in req
@@ -243,16 +233,12 @@ def detect_intent(user_input):
 
         intent = Intent.SEARCH
 
-
     logger.info(
         "Detected intent: %s",
         intent.name
     )
 
-
     return intent
-
-
 
 
 def retrieve_rag(user_input):
